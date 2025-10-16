@@ -23,7 +23,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ toLower(github.repository_owner) }}
+          username: viktdo
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push (fitcoach-api)
@@ -33,7 +33,7 @@ jobs:
           file: ./apps/fitcoach-api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/fitcoach-api:main
-            ghcr.io/${{ toLower(github.repository_owner) }}/fitcoach-api:${{ github.sha }}
+            ghcr.io/viktdo/fitcoach-api:main
+            ghcr.io/viktdo/fitcoach-api:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
