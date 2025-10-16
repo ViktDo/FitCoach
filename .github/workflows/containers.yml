@@ -1,0 +1,72 @@
+name: build-and-push-images
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # нужно для push в GHCR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # NEXT APP
+      - name: Meta (next)
+        id: meta_next
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ViktDo/fitcoach-next
+          tags: |
+            type=raw,value=main
+            type=sha
+
+      - name: Build & Push (next)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/fitcoach-next
+          file: ./apps/fitcoach-next/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta_next.outputs.tags }}
+          labels: ${{ steps.meta_next.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # API
+      - name: Meta (api)
+        id: meta_api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ViktDo/fitcoach-api
+          tags: |
+            type=raw,value=main
+            type=sha
+
+      - name: Build & Push (api)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/fitcoach-api
+          file: ./apps/fitcoach-api/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta_api.outputs.tags }}
+          labels: ${{ steps.meta_api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
