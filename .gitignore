@@ -1,0 +1,31 @@
+# Node / pnpm / yarn
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+npm-debug.log*
+package-lock.json
+
+# Next
+.next/
+out/
+.next.cache/
+dist/
+*.log
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Docker junk
+**/.DS_Store
+**/Thumbs.db
+
+# n8n local data (если вдруг положишь сюда)
+n8n_data/
+shared_data/
+
+# IDE
+.vscode/
+.idea/
+*.iml
