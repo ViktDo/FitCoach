@@ -1,0 +1,3 @@
+# apps/fitcoach-next/.dockerignore
+node_modules
+.next/cache
