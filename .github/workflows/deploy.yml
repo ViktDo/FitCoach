@@ -21,7 +21,7 @@ jobs:
           ssh-keyscan -t ed25519 ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      # 2) быстрый тест подключения по ключу (BatchMode=yes -> ошибку покажет сразу)
+      # 2) быстрый тест подключении по ключу (BatchMode=yes -> ошибку покажет сразу)
       - name: SSH smoke test
         run: |
           ssh -i ~/.ssh/fitcoach_deploy \
