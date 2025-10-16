@@ -2,13 +2,15 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
-# 1) копируем package.json
+
 COPY package*.json ./
-# 2) ставим зависимости обычным install (lock-файла нет)
 RUN npm install
-# 3) копируем исходники
+
+# Гарантируем, что папка public существует в builder (на случай, если её нет в контексте)
+RUN mkdir -p public
+
 COPY . .
-# 4) собираем Next (standalone в .next/standalone)
+# next.config.js содержит: output: 'standalone'
 RUN npm run build
 
 # ---------- run ----------
@@ -16,18 +18,20 @@ FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 
-# ⚠️ Иногда Next/sharp на Alpine требует glibc-совместимости
-RUN apk add --no-cache libc6-compat curl
-
-# Кладём весь standalone-сервер
+# Кладём standalone-сервер, который собрал Next
 COPY --from=builder /app/.next/standalone ./
-# Статика
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+
+# Вместо обязательного COPY public — просто создадим её (если есть что копировать — не критично)
+RUN mkdir -p ./public
+# Если хочешь копировать, когда она реально есть — оставь строку ниже, но она уже не обязательна:
+# COPY --from=builder /app/public ./public
 
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD curl -sf http://127.0.0.1:3000/api/health || exit 1
 
-# В .next/standalone уже есть server.js — ЕГО и запускаем
+# healthcheck (удобно для Portainer)
+RUN apk add --no-cache curl
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD curl -sf http://127.0.0.1:3000/health || exit 1
+
 CMD ["node","server.js"]
