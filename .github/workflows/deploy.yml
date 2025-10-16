@@ -9,23 +9,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Add VPS host key (known_hosts)
+      # 1) кладём ключ и known_hosts
+      - name: Prepare SSH key and known_hosts
         run: |
+          set -e
           mkdir -p ~/.ssh
+          # пишем приватный ключ из секретов
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/fitcoach_deploy
+          chmod 600 ~/.ssh/fitcoach_deploy
+          # добавляем host key сервера, чтобы не было "Host key verification failed"
           ssh-keyscan -t ed25519 ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            set -euo pipefail
-            cd /root/apps
-            git fetch --all
-            git reset --hard origin/main
-            docker compose up -d --build
-            docker image prune -f || true
+      # 2) быстрый тест подключения по ключу (BatchMode=yes -> ошибку покажет сразу)
+      - name: SSH smoke test
+        run: |
+          ssh -i ~/.ssh/fitcoach_deploy \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo ok && hostname && whoami"
+
+      # 3) деплой (запускаем твой скрипт)
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/fitcoach_deploy \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "/root/apps/deploy.sh"
