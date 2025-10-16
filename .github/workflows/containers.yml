@@ -32,7 +32,7 @@ jobs:
         id: meta_next
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/ViktDo/fitcoach-next
+          images: ghcr.io/viktdo/fitcoach-next
           tags: |
             type=raw,value=main
             type=sha
@@ -54,7 +54,7 @@ jobs:
         id: meta_api
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/ViktDo/fitcoach-api
+          images: ghcr.io/viktdo/fitcoach-api
           tags: |
             type=raw,value=main
             type=sha
