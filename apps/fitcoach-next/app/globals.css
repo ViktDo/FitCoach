@@ -1,0 +1,31 @@
+/* Базовый ресет + аккуратная типографика */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+  background: #f9fafb; /* gray-50 */
+  color: #111827;      /* gray-900 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ссылки */
+a { color: #4f46e5; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Удобные контейнеры на всю высоту */
+.main-center {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Простая карточка */
+.card {
+  width: 100%;
+  max-width: 42rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,.05);
+  padding: 1.5rem;
+}
