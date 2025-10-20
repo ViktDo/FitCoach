@@ -11,9 +11,10 @@ export function cleanToken(t: unknown): string {
 }
 
 /** Срезает ведущие '=' у строк из n8n и т.п. */
-export function stripEq<T extends unknown>(v: T): T extends string ? string : T {
-  // @ts-expect-error — на выходе тип строки сохраняем условно
-  return typeof v === 'string' ? (v.replace(/^=+/, '') as any) : v;
+export function stripEq(v: string): string;
+export function stripEq<T>(v: T): T;
+export function stripEq(v: unknown): unknown {
+  return typeof v === 'string' ? v.replace(/^=+/, '') : v;
 }
 
 /** Нормализация телефона к виду с ведущим '+' и цифрами; пустое → null */
@@ -70,17 +71,20 @@ export function hasPdn(): boolean {
 
 /** Мягкий переход на /home (несколько попыток для надёжности) */
 export function goHome(): void {
-  try {
-    window.location.assign('/home');
-  } catch {}
-  try {
-    window.location.replace('/home');
-  } catch {}
-  setTimeout(() => {
-    try {
-      window.location.href = '/home';
-    } catch {}
-  }, 150);
+  try { window.location.assign('/home'); } catch {}
+  try { window.location.replace('/home'); } catch {}
+  setTimeout(() => { try { window.location.href = '/home'; } catch {} }, 150);
+}
+
+/* ───────────────────── HTTP helpers ───────────────────── */
+
+function withTimeout(ms: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return {
+    signal: controller.signal,
+    done: () => clearTimeout(timer),
+  };
 }
 
 /** Общий обработчик ошибок API: редиректы и сообщение */
@@ -88,37 +92,47 @@ function handleApiError(r: Response, data: any): never {
   const code = data?.code || '';
   if (r.status === 401 || code === 'INVALID_SESSION') {
     localStorage.clear();
-    window.location.replace('/onboard/auth');
-    // останавливаем дальнейшее выполнение промиса
+    void window.location.replace('/onboard/auth');
     throw new Error('INVALID_SESSION');
   }
   if (r.status === 409 || code === 'ROLE_PENDING') {
-    window.location.replace('/onboard/role');
+    void window.location.replace('/onboard/role');
     throw new Error('ROLE_PENDING');
   }
   throw new Error(data?.message || code || 'Ошибка запроса');
 }
 
 /** GET-запрос с нормализацией ответа и авто-редиректами по кодам */
-export async function apiGet<T = any>(url: string): Promise<T> {
-  const r = await fetch(url, { cache: 'no-store' });
-  const raw = await r.json().catch(() => ({}));
-  const d = normalizePayload<T>(raw);
-  if (!r.ok) handleApiError(r, d);
-  return d;
+export async function apiGet<T = any>(url: string, timeoutMs = 10000): Promise<T> {
+  const t = withTimeout(timeoutMs);
+  try {
+    const r = await fetch(url, { cache: 'no-store', signal: t.signal });
+    const raw = await r.json().catch(() => ({}));
+    const d = normalizePayload<T>(raw);
+    if (!r.ok) handleApiError(r, d);
+    return d;
+  } finally {
+    t.done();
+  }
 }
 
 /** POST-запрос с нормализацией ответа и авто-редиректами по кодам */
-export async function apiPost<T = any>(url: string, payload: any): Promise<T> {
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  const raw = await r.json().catch(() => ({}));
-  const d = normalizePayload<T>(raw);
-  if (!r.ok) handleApiError(r, d);
-  return d;
+export async function apiPost<T = any>(url: string, payload: any, timeoutMs = 10000): Promise<T> {
+  const t = withTimeout(timeoutMs);
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: t.signal,
+    });
+    const raw = await r.json().catch(() => ({}));
+    const d = normalizePayload<T>(raw);
+    if (!r.ok) handleApiError(r, d);
+    return d;
+  } finally {
+    t.done();
+  }
 }
 
 /* ───────────────────── Соц-ссылки (для UX на профиле тренера) ───────────────────── */

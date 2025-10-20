@@ -9,7 +9,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["app/*"]
     },
     "types": ["node"]
   },

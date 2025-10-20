@@ -7,7 +7,7 @@ import {
   getRole,
   hasPdn,
   normalizePhone,
-} from '@/app/lib/client';
+} from '@/lib/client';
 
 const PDN_VERSION = 'v1.0';
 

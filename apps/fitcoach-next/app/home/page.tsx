@@ -1,6 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import {
+  API_BASE,
+  cleanToken,
+  toBoolean,
+  postJSON,
+} from '@/lib/client';
 
 export default function HomePage() {
   return (

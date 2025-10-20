@@ -11,7 +11,7 @@ import {
   apiPost,
   stripEq,
   goHome,
-} from '@/app/lib/client';
+} from '@/lib/client';
 
 type Role = 'athlete' | 'coach' | 'pending';
 

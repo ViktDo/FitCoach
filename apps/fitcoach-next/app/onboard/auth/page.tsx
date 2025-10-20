@@ -8,7 +8,7 @@ import {
   cleanToken,
   toBoolean,
   postJSON,
-} from '@/app/lib/client';
+} from '@/lib/client';
 
 // Явное расширение глобального окна для TS
 declare global {

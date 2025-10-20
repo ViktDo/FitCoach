@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { API_BASE, cleanToken, getRole, hasPdn, toBoolean } from '@/app/lib/client';
+import { API_BASE, cleanToken, getRole, hasPdn, toBoolean } from '@/lib/client';
 
 type Role = 'athlete' | 'coach' | 'pending';
 
