@@ -7,20 +7,18 @@ import {
   getRole,
   hasPdn,
   normalizePhone,
+  apiPost,
 } from '@/lib/client';
 
 const PDN_VERSION = 'v1.0';
 
-type ApiPayload = Record<string, any>;
-
-// {}, [{…}], [{json:{…}}] → {…}
-function normalizePayload(raw: any) {
-  const first = Array.isArray(raw) ? raw[0] : raw;
-  if (first && typeof first === 'object' && 'json' in first && first.json && typeof first.json === 'object') {
-    return first.json;
-  }
-  return first || {};
-}
+type ConsentResponse = {
+  ok?: boolean;
+  version?: string;
+  ts?: string;
+  code?: string;
+  message?: string;
+};
 
 export default function ConsentPage() {
   const [fullName, setFullName] = useState('');
@@ -28,7 +26,7 @@ export default function ConsentPage() {
   const [agree, setAgree] = useState(false);
 
   const [msg, setMsg] = useState<string>('');
-  const [msgKind, setMsgKind] = useState<'neutral'|'error'|'ok'>('neutral');
+  const [msgKind, setMsgKind] = useState<'neutral' | 'error' | 'ok'>('neutral');
   const [submitting, setSubmitting] = useState(false);
 
   // валидность формы
@@ -42,10 +40,19 @@ export default function ConsentPage() {
   useEffect(() => {
     try {
       const token = cleanToken(localStorage.getItem('session_token'));
-      if (!token) { window.location.replace('/onboard/auth'); return; }
+      if (!token) {
+        window.location.replace('/onboard/auth');
+        return;
+      }
       const role = getRole();
-      if (role === 'pending') { window.location.replace('/onboard/role'); return; }
-      if (hasPdn()) { window.location.replace('/onboard/profile'); return; }
+      if (role === 'pending') {
+        window.location.replace('/onboard/role');
+        return;
+      }
+      if (hasPdn()) {
+        window.location.replace('/onboard/profile');
+        return;
+      }
 
       // префилл (если вернулись на страницу)
       const ln = localStorage.getItem('full_name') || '';
@@ -53,42 +60,9 @@ export default function ConsentPage() {
       if (ln) setFullName(ln);
       if (lp) setPhone(lp);
     } catch {
-      // в самых редких случаях при SSR-клиентных гонках
       /* noop */
     }
   }, []);
-
-  async function postJSON(url: string, payload: ApiPayload, timeoutMs = 10000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      const raw = await r.json().catch(()=> ({}));
-      const d = normalizePayload(raw);
-
-      const code = d?.code || '';
-      if (r.status === 401 || code === 'INVALID_SESSION') {
-        localStorage.clear();
-        window.location.replace('/onboard/auth');
-        return new Promise<never>(() => {});
-      }
-      if (r.status === 409 || code === 'ROLE_PENDING') {
-        window.location.replace('/onboard/role');
-        return new Promise<never>(() => {});
-      }
-      if (!r.ok) {
-        throw new Error(d?.message || code || 'Ошибка запроса');
-      }
-      return d;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
 
   async function onSubmit(e?: React.FormEvent) {
     e?.preventDefault();
@@ -105,7 +79,7 @@ export default function ConsentPage() {
 
     setSubmitting(true);
     try {
-      const d = await postJSON(`${API_BASE}/api/consent`, {
+      const d = await apiPost<ConsentResponse>(`${API_BASE}/api/consent`, {
         session_token: token,
         full_name: fn,
         phone: ph,
@@ -150,7 +124,7 @@ export default function ConsentPage() {
             <span className="block mb-1 font-medium">ФИО</span>
             <input
               value={fullName}
-              onChange={e=>setFullName(e.target.value)}
+              onChange={e => setFullName(e.target.value)}
               className="w-full border rounded-xl px-3 py-2"
               autoComplete="name"
               placeholder="Иванов Иван Иванович"
@@ -161,7 +135,7 @@ export default function ConsentPage() {
             <span className="block mb-1 font-medium">Телефон</span>
             <input
               value={phone}
-              onChange={e=>setPhone(e.target.value)}
+              onChange={e => setPhone(e.target.value)}
               className="w-full border rounded-xl px-3 py-2"
               inputMode="tel"
               autoComplete="tel"
@@ -173,7 +147,7 @@ export default function ConsentPage() {
             <input
               type="checkbox"
               checked={agree}
-              onChange={e=>setAgree(e.target.checked)}
+              onChange={e => setAgree(e.target.checked)}
               className="mt-1"
             />
             <span className="text-sm text-gray-700">
