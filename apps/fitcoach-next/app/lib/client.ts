@@ -167,3 +167,12 @@ export function toTgChannelVal(v: string): string {
   if (/^https?:\/\//i.test(s)) return s; // полная ссылка допустима
   return s; // иначе оставляем как есть (@handle или текст)
 }
+
+// ── Совместимость со старым кодом ─────────────────────────────────────────────
+export async function getJSON<T = any>(url: string): Promise<T> {
+  return apiGet<T>(url);
+}
+
+export async function postJSON<T = any>(url: string, payload: any): Promise<T> {
+  return apiPost<T>(url, payload);
+}
