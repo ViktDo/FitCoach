@@ -11,6 +11,11 @@ import {
   apiPost,
   stripEq,
   goHome,
+  // импортируем готовые хелперы соц-ссылок
+  ensureHttps,
+  toInstagramUrl,
+  toTgUserUrl,
+  toTgChannelVal,
 } from '@/lib/client';
 
 type Role = 'athlete' | 'coach' | 'pending';
@@ -41,11 +46,14 @@ export default function ProfilePage() {
   // coach
   const [cBio, setCBio] = useState('');
   const [cExp, setCExp] = useState<string>('');
-  const [cInst, setCInst] = useState(''); // url/handle
-  const [cTgCh, setCTgCh] = useState(''); // @handle | url
-  const [cTgLink, setCTgLink] = useState(''); // url/@handle
+  const [cInst, setCInst] = useState('');      // url/handle
+  const [cTgCh, setCTgCh] = useState('');      // @handle | url
+  const [cTgLink, setCTgLink] = useState('');  // url/@handle
 
-  const token = useMemo(() => cleanToken(typeof window !== 'undefined' ? localStorage.getItem('session_token') : ''), []);
+  const token = useMemo(
+    () => cleanToken(typeof window !== 'undefined' ? localStorage.getItem('session_token') : ''),
+    []
+  );
 
   useEffect(() => {
     if (!token) {
@@ -100,35 +108,6 @@ export default function ProfilePage() {
     })();
   }, [token]);
 
-  // ── нормализация соцсетей (UX) ──────────────────────────────
-  function ensureHttps(u: string) {
-    const s = (u || '').trim();
-    if (!s) return '';
-    if (/^https?:\/\//i.test(s)) return s;
-    return `https://${s.replace(/^\/+/, '')}`;
-  }
-  function toInstagramUrl(v: string) {
-    const s = (v || '').trim();
-    if (!s) return '';
-    if (/^https?:\/\//i.test(s)) return s;
-    const handle = s.replace(/^@/, '').replace(/^instagram\.com\//i, '').replace(/^www\./i, '');
-    return `https://instagram.com/${handle}`;
-  }
-  function toTgUserUrl(v: string) {
-    const s = (v || '').trim();
-    if (!s) return '';
-    if (/^https?:\/\//i.test(s)) return s;
-    const handle = s.replace(/^@/, '').replace(/^t\.me\//i, '');
-    return `https://t.me/${handle}`;
-  }
-  function toTgChannelVal(v: string) {
-    const s = (v || '').trim();
-    if (!s) return '';
-    if (/^https?:\/\//i.test(s)) return s; // полная ссылка ок
-    return s; // допустим @handle или my_channel
-  }
-
-  // ── submit ──────────────────────────────────────────────────
   async function saveAthlete() {
     setMsg('');
     setBusy(true);
@@ -182,7 +161,6 @@ export default function ProfilePage() {
     }
   }
 
-  // ── UI ──────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-6">
