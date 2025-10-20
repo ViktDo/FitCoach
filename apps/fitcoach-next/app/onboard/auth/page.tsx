@@ -7,10 +7,10 @@ import {
   API_BASE,
   cleanToken,
   toBoolean,
-  postJSON,
+  apiPost,        // ← вместо postJSON
 } from '@/lib/client';
 
-// Явное расширение глобального окна для TS
+// Расширение window для Telegram WebApp
 declare global {
   interface Window {
     Telegram?: {
@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-// Добавлен простой компонент-спиннер
+// Простой спиннер
 function Spinner() {
   return (
     <svg
@@ -34,6 +34,15 @@ function Spinner() {
     </svg>
   );
 }
+
+type TelegramAuthResponse = {
+  session_token: string;
+  role?: 'pending' | 'athlete' | 'coach';
+  pdn_required?: boolean | string | number;
+  pdn_version?: string | number;
+  message?: string;
+  code?: string;
+};
 
 export default function AuthPage() {
   const router = useRouter();
@@ -62,32 +71,32 @@ export default function AuthPage() {
 
         setState('Аутентификация…');
 
-        const data = await postJSON(`${API_BASE}/api/auth/telegram`, {
+        const data = await apiPost<TelegramAuthResponse>(`${API_BASE}/api/auth/telegram`, {
           platform: 'telegram',
           platform_id: String(user.id),
           initData,
         });
 
         // Сессия
-        const token = cleanToken((data as any)?.session_token);
+        const token = cleanToken(data?.session_token);
         if (!token) throw new Error('Не удалось авторизоваться: отсутствует session_token');
 
         localStorage.setItem('session_token', token);
-        const role = String((data as any)?.role || 'pending').toLowerCase();
+        const role = String(data?.role || 'pending').toLowerCase();
         localStorage.setItem('user_role', role);
 
         // Флаг ПДн
-        const pdnRequired = toBoolean((data as any)?.pdn_required);
+        const pdnRequired = toBoolean(data?.pdn_required);
         localStorage.setItem('pdn_required', String(pdnRequired));
         if (!pdnRequired) {
           localStorage.setItem('pdn_ok', '1');
-          localStorage.setItem('pdn_version', String((data as any)?.pdn_version || '1'));
+          localStorage.setItem('pdn_version', String(data?.pdn_version || '1'));
           localStorage.setItem('pdn_ts', new Date().toISOString());
         } else {
           localStorage.removeItem('pdn_ok');
         }
 
-        // Роутинг: role → role | consent → consent | иначе → home
+        // Роутинг
         setState('Готово, перенаправляем…');
         setTimeout(() => {
           if (role === 'pending') {
@@ -105,7 +114,7 @@ export default function AuthPage() {
       }
     }
 
-    // небольшой delay, чтобы SDK точно загрузился
+    // небольшой delay, чтобы SDK успел загрузиться
     const t = setTimeout(run, 50);
     return () => clearTimeout(t);
   }, [router]);
