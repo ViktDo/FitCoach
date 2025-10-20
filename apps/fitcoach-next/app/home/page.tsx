@@ -1,12 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  API_BASE,
-  cleanToken,
-  toBoolean,
-  postJSON,
-} from '@/lib/client';
+import { API_BASE, cleanToken, toBoolean } from '@/lib/client';
 
 export default function HomePage() {
   return (
@@ -18,9 +13,15 @@ export default function HomePage() {
         <div className="border rounded-xl p-4 space-y-3">
           <div className="font-semibold">Навигация</div>
           <div className="grid grid-cols-1 gap-2">
-            <Link href="/onboard/profile" className="px-4 py-2 border rounded-xl hover:bg-gray-50">Профиль</Link>
-            <Link href="/onboard/role" className="px-4 py-2 border rounded-xl hover:bg-gray-50">Выбор роли</Link>
-            <Link href="/onboard/consent" className="px-4 py-2 border rounded-xl hover:bg-gray-50">Согласие ПДн</Link>
+            <Link href="/onboard/profile" className="px-4 py-2 border rounded-xl hover:bg-gray-50">
+              Профиль
+            </Link>
+            <Link href="/onboard/role" className="px-4 py-2 border rounded-xl hover:bg-gray-50">
+              Выбор роли
+            </Link>
+            <Link href="/onboard/consent" className="px-4 py-2 border rounded-xl hover:bg-gray-50">
+              Согласие ПДн
+            </Link>
           </div>
         </div>
       </div>
