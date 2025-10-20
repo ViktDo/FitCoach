@@ -21,6 +21,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 # Кладём standalone-сервер, который собрал Next
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public   # <--- вот эта строка обязательна
+
 
 # Вместо обязательного COPY public — просто создадим её (если есть что копировать — не критично)
 RUN mkdir -p ./public
