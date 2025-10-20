@@ -1,6 +1,6 @@
-// apps/fitcoach-next/app/onboard/docs/layout.tsx
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import Breadcrumbs from './_components/Breadcrumbs';
 
 // ===== SEO по умолчанию для всего раздела /onboard/docs =====
 export const metadata = {
@@ -23,51 +23,6 @@ function Logo() {
       </div>
       <span className="text-lg font-semibold text-gray-800">FitCoach</span>
     </Link>
-  );
-}
-
-// Небольшая “крошка” с автогенерацией из pathname.
-// Отдельный client-компонент, чтобы не переводить весь layout в client.
-function Breadcrumbs() {
-  'use client';
-  const { usePathname } = require('next/navigation');
-  const pathname: string = usePathname();
-  const parts = pathname.split('/').filter(Boolean);
-
-  // Читабельные лейблы для известных сегментов
-  const labels: Record<string, string> = {
-    onboard: 'Онбординг',
-    docs: 'Документы',
-    'pdn-policy': 'Политика ПДн',
-    offer: 'Публичная оферта',
-  };
-
-  const items = parts.map((seg, idx) => {
-    const href = '/' + parts.slice(0, idx + 1).join('/');
-    const isLast = idx === parts.length - 1;
-    const label = labels[seg] || seg;
-    return (
-      <span key={href} className="inline-flex items-center">
-        {idx > 0 && <span className="mx-2 text-gray-400">/</span>}
-        {isLast ? (
-          <span className="text-gray-900">{label}</span>
-        ) : (
-          <Link href={href} className="text-indigo-600 hover:underline">
-            {label}
-          </Link>
-        )}
-      </span>
-    );
-  });
-
-  return (
-    <nav aria-label="Хлебные крошки" className="text-sm text-gray-500">
-      <Link href="/home" className="text-indigo-600 hover:underline">
-        Главная
-      </Link>
-      <span className="mx-2 text-gray-400">/</span>
-      {items}
-    </nav>
   );
 }
 
