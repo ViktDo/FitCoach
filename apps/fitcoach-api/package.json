@@ -1,15 +1,20 @@
 {
-    "name": "fitcoach-api",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "start": "node index.js"
-    },
-    "dependencies": {
-        "express": "^4.19.2",
-        "node-fetch": "^3.3.2",
-        "@aws-sdk/client-s3": "^3.632.0",
-        "@aws-sdk/s3-request-presigner": "^3.632.0",
-        "pg": "^8.11.5"
-    }
+  "name": "fitcoach-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "pg": "^8.11.3",
+    "pino": "^9.4.0",
+    "pino-http": "^10.3.0",
+    "uid-safe": "^2.1.5"
+  }
 }
