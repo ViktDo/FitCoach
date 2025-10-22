@@ -48,9 +48,7 @@ jobs:
             ghcr.io/viktdo/fitcoach-next:${{ github.sha }}
           platforms: linux/amd64
           tags: ${{ steps.meta_next.outputs.tags }}
-          labels: |
-             org.opencontainers.image.source=${{ github.repository }}
-             ${{ steps.meta_next.outputs.labels }}
+          labels: ${{ steps.meta_next.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
