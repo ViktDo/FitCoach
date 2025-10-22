@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write   # нужно для push в GHCR
+      packages: write  # нужно для push в GHCR
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,16 +43,13 @@ jobs:
           context: ./apps/fitcoach-next
           file: ./apps/fitcoach-next/Dockerfile
           push: true
-          tags: |
-            ghcr.io/viktdo/fitcoach-next:main
-            ghcr.io/viktdo/fitcoach-next:${{ github.sha }}
           platforms: linux/amd64
           tags: ${{ steps.meta_next.outputs.tags }}
           labels: ${{ steps.meta_next.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-               NEXT_PUBLIC_API_BASE=https://api.bot-fitness.ru
+            NEXT_PUBLIC_API_BASE=https://api.bot-fitness.ru
 
       # API
       - name: Meta (api)
