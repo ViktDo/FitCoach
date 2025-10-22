@@ -1,6 +1,9 @@
 # ---------- build ----------
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+ARG NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package*.json ./
@@ -17,6 +20,8 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
+
 
 # Кладём standalone-сервер, который собрал Next
 COPY --from=builder /app/.next/standalone ./
